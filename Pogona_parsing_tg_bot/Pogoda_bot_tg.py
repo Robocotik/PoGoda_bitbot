@@ -20,8 +20,6 @@ flg_weather = 0
 with open("city_catalog.json", 'r', encoding='utf-8') as file:
     json_load = json.load(file)
 
-print(json_load)
-
 
 # Создание машины состояний
 class Weather_machine_state(StatesGroup):
@@ -74,6 +72,11 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
     if data['period'] == "На месяц":
         for el in wth.get_month(city):
             await message.answer(el)
+
+    elif data['period'] == "На две недели":
+        for el in wth.get_2week(city):
+            await message.answer(el)
+
     await state.finish()
 
 
@@ -81,32 +84,3 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
 
-    """
-        flg = 0
-    if flg == 0 and message.text.strip() == 'Погода, серьезно?':
-        await message.answer(text="Да, людишка, напиши какой город тебя интересует и я приоткрою завесу тайн\n")
-        await Weather_machine_state.city.set()
-        flg = 1
-        city = ''
-
-    if flg == 1 and kb.check_the_dick_for_key(json_load, message.text.strip()):
-        city = message.text.strip()
-        print("ПРОВЕРКА: " + str(message.text) + str(kb.check_the_dick_for_key(json_load, message.text)))
-        flg = 2
-        await message.answer("Я тебя услышал, дорогой, щас все будет. Укажи только время, по-братски",
-                             reply_markup=kb.markup_weather_period)
-
-    if flg == 2 and message.text.strip() in kb.weather_periods:
-        period = message.text.strip()
-        if period == "На месяц":
-            for el in wth.get_month(city):
-                await message.answer(el)
-        elif period == "На две недели":
-            wth.get_2week(city)
-    else:
-        print("|" + message.text + "|")
-        if message.text != '':
-            await message.answer("Указан неверный временной промежуток")
-    :param message: 
-    :return: 
-    """
