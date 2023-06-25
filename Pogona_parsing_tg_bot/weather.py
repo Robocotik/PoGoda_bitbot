@@ -12,8 +12,11 @@ with open("city_catalog.json", 'r', encoding='utf-8') as file:
 
 
 def get_month(city):
-    url = "https://www.gismeteo.ru" + str(json_load[city]) + "month"
-    print(url)
+    try:
+        url = "https://www.gismeteo.ru" + str(json_load[city]) + "month"
+    except:
+        url = ''
+        return -1
     response = requests.get(url, headers={
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
     })

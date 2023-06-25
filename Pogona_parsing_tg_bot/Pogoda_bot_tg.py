@@ -55,23 +55,26 @@ async def process_pogoda_command(message: types.Message):
 @dp.message_handler(state=Weather_machine_state.city)
 async def load_city(message: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
-        data['city'] = message.text
-        if kb.check_the_dick_for_key(json_load, data['city']):
-            await message.answer("Я тебя услышал, дорогой, щас все будет.\nУкажи только время, по-братски",
+        data['city'] = message.text if message.text[0].isupper() else message.text[0].upper() + message.text[1:]
+        if kb.check_the_dick_for_key(json_load,
+                                     data['city'] if data['city'].isupper() else data['city'][0].upper() + data['city'][
+                                                                                                           1:]):
+            await message.answer("Я тебя услышал, дорогой, щас все будет.\nУкажи только время по-братски",
                                  reply_markup=kb.markup_weather_period)
             await Weather_machine_state.next()
         else:
             await message.answer("Такого города нет 👉👈.... \nПопробуем еще раз?")
-            data['city'] = message.text
+            data['city'] = message.text if message.text[0].isupper() else message.text[0].upper() + message.text[1:]
+
 
 @dp.message_handler(state=Weather_machine_state.period)
 async def load_period(message: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
-        data['period'] = message.text
+        data['period'] = message.text if message.text[0].isupper() else message.text[0].upper() + message.text[1:]
 
     # обработка периодов
     if data['period'] in kb.weather_periods:
-        await message.answer("Лови, Дорогой")
+        await message.answer("Лови, Дорогой", reply_markup=kb.markup_retry)
         if data['period'] == "На месяц":
             for el in wth.get_month(city):
                 await message.answer(el)
@@ -85,7 +88,14 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
         await message.answer("Такого временного промежутка нет 👉👈... \nМожет попробуем снова?",
                              reply_markup=kb.markup_weather_period)
 
+
+@dp.message_handler()
+async def retry_call(message: types.Message):
+    if message.text == "Еще по-братски":
+        await message.answer(text="Да, людишка, напиши какой город тебя интересует и я приоткрою завесу тайн\n")
+        await Weather_machine_state.city.set()
+
+
 # запуск кода
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
-

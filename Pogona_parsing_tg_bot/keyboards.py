@@ -73,6 +73,7 @@ weather_periods = ['На сейчас', 'На сегодня', 'На завтр�
 talk_start_1 = KeyboardButton('/Погода,серьезно?')
 
 # создание отдельных виртуальных клавиатур
+markup_retry = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton("Еще по-братски"))
 markup_talk_start = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(talk_start_1)
 markup_weather_period = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).row(weather_periods[0],
                                                                                               weather_periods[1],
