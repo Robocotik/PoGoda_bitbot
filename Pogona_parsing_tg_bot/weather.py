@@ -2,6 +2,7 @@ import json
 import re
 
 import requests
+from aiogram.utils.markdown import bold
 from bs4 import BeautifulSoup
 
 import keyboards as kb
@@ -64,10 +65,8 @@ def get_2week(city):
         else:
             all_dates[i] += ' ' + cur_month
 
-    print(all_dates)
     all_icon_phrases = [i.find("use").get("href") for i in
                         all_wraps.find(class_="widget-row widget-row-icon").find_all(class_="row-item")]
-    print(all_icon_phrases)
 
     for i in all_wraps.find_all("div", class_="widget-row-chart widget-row-chart-temperature row-with-caption"):
         if i.get("data-row") == "temperature-air":
@@ -103,37 +102,30 @@ def get_2week(city):
             pressure[-1].append(el.find(class_="maxt").find(class_="unit unit_pressure_mm_hg_atm").text)
         except:
             pressure[-1].append("-")
-        # presure.append([el.find(class_="mint").find(class_="unit unit_pressure_mm_hg_atm").text,el.find(class_="maxt").find(class_="unit unit_pressure_mm_hg_atm").text])
-    print(t_air)
-    print(t_feel_air)
-    print(t_avg_air)
-    print(wind_avg_speed)
-    print(wind_gust)
 
     for el in all_wraps.find(class_="widget-row widget-row-wind-direction row-with-caption").find_all(
             class_="row-item"):
         wind_direction.append([str(el.next.get("class")[-1][-1]), str(el.find(class_="direction").text)])
-    print(wind_direction)
-    print(precipitation)
-    print(pressure)
 
     for el in all_wraps.find(class_="widget-row widget-row-humidity row-with-caption").find_all(
             class_=re.compile("row-item")):
         humidity.append(el.text)
     print(humidity)
     for i in range(14):
-        response2.append(all_dates[i])
+        response2.append(bold(all_dates[i]) + "\n")
+        response2[-1] += "-------------------------------------- \n"
         response2[-1] += (
-                " \n" + kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases[i])] + " " + kb.pogoda_phrase[
+                kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases[i])] + " " + kb.pogoda_phrase[
             kb.pogoda_picture_num.index(all_icon_phrases[i])] + " \n ")
-        response2[-1] += "------------------------------- \n"
-        response2[-1] += ("🌡️ Ощущается как " + t_feel_air[i][1] + " ℃ - " + t_feel_air[i][0] + " ℃ \n ")
-        response2[-1] += ("🌡️ В среднем " + t_avg_air[i] + "℃ \n ")
-        response2[-1] += "------------------------------- \n"
-        response2[-1] += ("🌪️ Направление ветра " + wind_direction[i][1] + " \n ")
+        response2[-1] += "-------------------------------------- \n"
+        response2[-1] += ("🌡️ Ощущается как " + t_feel_air[i][1] + " ℃  -  " + t_feel_air[i][0] + " ℃ \n ")
+        response2[-1] += ("🌡️ В среднем " + t_avg_air[i] + " ℃ \n ")
+        response2[-1] += "-------------------------------------- \n"
+        response2[-1] += ("🌪️ Направление ветра " + kb.arrows_directions[
+            kb.arrows_directions_alp.index(wind_direction[i][1])] + " " + wind_direction[i][1] + " \n ")
         response2[-1] += ("🌪️ Средняя скорость ветра " + wind_avg_speed[i] + "м/c \n ")
-        response2[-1] += "------------------------------- \n"
+        response2[-1] += "-------------------------------------- \n"
         response2[-1] += ("💧 Относительная влажность " + humidity[i] + " % \n ")
-        response2[-1] += "------------------------------- \n"
-        response2[-1] += ("🎚️ Давление " + pressure[i][0] + "мм. рт. ст. \n ")
+        response2[-1] += "-------------------------------------- \n"
+        response2[-1] += ("🎚️ Давление " + pressure[i][0] + " мм. рт. ст. \n ")
     return response2
