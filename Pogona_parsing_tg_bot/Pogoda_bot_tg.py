@@ -56,29 +56,34 @@ async def process_pogoda_command(message: types.Message):
 async def load_city(message: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['city'] = message.text
-    await message.answer("Я тебя услышал, дорогой, щас все будет. Укажи только время, по-братски",
-                         reply_markup=kb.markup_weather_period)
-    await Weather_machine_state.next()
-
+        if kb.check_the_dick_for_key(json_load, data['city']):
+            await message.answer("Я тебя услышал, дорогой, щас все будет.\nУкажи только время, по-братски",
+                                 reply_markup=kb.markup_weather_period)
+            await Weather_machine_state.next()
+        else:
+            await message.answer("Такого города нет 👉👈.... \nПопробуем еще раз?")
+            data['city'] = message.text
 
 @dp.message_handler(state=Weather_machine_state.period)
 async def load_period(message: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['period'] = message.text
 
-    await message.answer("Лови, Дорогой")
-
     # обработка периодов
-    if data['period'] == "На месяц":
-        for el in wth.get_month(city):
-            await message.answer(el)
+    if data['period'] in kb.weather_periods:
+        await message.answer("Лови, Дорогой")
+        if data['period'] == "На месяц":
+            for el in wth.get_month(city):
+                await message.answer(el)
 
-    elif data['period'] == "На две недели":
-        for el in wth.get_2week(city):
-            await message.answer(el)
+        elif data['period'] == "На две недели":
+            for el in wth.get_2week(city):
+                await message.answer(el)
 
-    await state.finish()
-
+        await state.finish()
+    else:
+        await message.answer("Такого временного промежутка нет 👉👈... \nМожет попробуем снова?",
+                             reply_markup=kb.markup_weather_period)
 
 # запуск кода
 if __name__ == '__main__':
