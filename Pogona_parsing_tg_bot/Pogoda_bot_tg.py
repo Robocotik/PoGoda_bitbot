@@ -3,6 +3,7 @@ import json
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
 import config as sc
@@ -46,7 +47,7 @@ async def send_welcome(message: types.Message) -> None:
         reply_markup=kb.markup_talk_start)
 
 
-@dp.message_handler(commands=['Погода,серьезно?'])
+@dp.message_handler(Text(equals="Погода, серьезно?"))
 async def process_pogoda_command(message: types.Message):
     await message.answer(text="Да, людишка, напиши какой город тебя интересует и я приоткрою завесу тайн\n")
     await Weather_machine_state.city.set()
@@ -83,17 +84,19 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
             for el in wth.get_2week(city):
                 await message.answer(el)
 
+        elif data['period'] == "На сейчас":
+            await message.answer(wth.get_now(city))
+
         await state.finish()
     else:
         await message.answer("Такого временного промежутка нет 👉👈... \nМожет попробуем снова?",
                              reply_markup=kb.markup_weather_period)
 
 
-@dp.message_handler()
+@dp.message_handler(Text(equals="Еще по-братски"))
 async def retry_call(message: types.Message):
-    if message.text == "Еще по-братски":
-        await message.answer(text="Да, людишка, напиши какой город тебя интересует и я приоткрою завесу тайн\n")
-        await Weather_machine_state.city.set()
+    await message.answer(text="Аййййй, Дорогой, я в тебе не сомневался, куда тебя в этот раз домчать?\n")
+    await Weather_machine_state.city.set()
 
 
 # запуск кода

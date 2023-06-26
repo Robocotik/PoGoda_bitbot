@@ -20,7 +20,7 @@ def get_month(city):
     response = requests.get(url, headers={
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
     })
-    soup = BeautifulSoup(response.text, "lxml")
+    soup = BeautifulSoup(response.text, "lxml", parser='html.parser')
     response2 = []
     all_wraps = soup.find("div", class_="widget widget-month").find_all(class_="row-item")
     cur_month = ''
@@ -63,7 +63,7 @@ def get_2week(city):
     pressure = []
     humidity = []
     response2 = []
-    soup = BeautifulSoup(response.text, "lxml")
+    soup = BeautifulSoup(response.text, "lxml", parser='html.parser')
     all_wraps = soup.find("div", class_="widget-body widget-columns-14").find(class_="widget-items")
     all_dates = [i.text for i in all_wraps.find(class_="widget-row widget-row-days-date").find_all(class_="date")]
     cur_month = ''
@@ -156,21 +156,66 @@ def get_2week(city):
 
     for i in range(14):
         response2.append(bold(all_dates[i]) + "\n")
-        response2[-1] += "-------------------------------------- \n"
+        response2[-1] += kb.slash
         response2[-1] += (
                 kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases[i])] + " " + kb.pogoda_phrase[
-            kb.pogoda_picture_num.index(all_icon_phrases[i])] + " \n ")
-        response2[-1] += "-------------------------------------- \n"
+            kb.pogoda_picture_num.index(all_icon_phrases[i])] + " \n")
+        response2[-1] += kb.slash
         response2[-1] += ("🌡️ Ощущается как " + t_feel_air[i][1] + " ℃  -  " + t_feel_air[i][0] + " ℃ \n ")
-        response2[-1] += ("🌡️ В среднем " + t_avg_air[i] + " ℃ \n ")
-        response2[-1] += "-------------------------------------- \n"
+        response2[-1] += ("🌡️ В среднем " + t_avg_air[i] + " ℃ \n")
+        response2[-1] += kb.slash
         response2[-1] += ("🌬 Направление ветра " + kb.arrows_directions[
-            kb.arrows_directions_alp.index(wind_direction[i][1])] + " " + wind_direction[i][1] + " \n ")
-        response2[-1] += ("🌬 Средняя скорость ветра " + wind_avg_speed[i] + "м/c \n ")
-        response2[-1] += "-------------------------------------- \n"
-        response2[-1] += ("💧 Относительная влажность " + humidity[i] + " % \n ")
-        response2[-1] += "-------------------------------------- \n"
+            kb.arrows_directions_alp.index(wind_direction[i][1])] + " " + wind_direction[i][1] + " \n")
+        response2[-1] += ("🌬 Средняя скорость ветра " + wind_avg_speed[i] + "м/c \n")
+        response2[-1] += kb.slash
+        response2[-1] += ("💧 Относительная влажность " + humidity[i] + " % \n")
+        response2[-1] += kb.slash
         response2[-1] += ("🎚️ Давление " + pressure[i][0] + " мм. рт. ст. \n ")
-        response2[-1] += "-------------------------------------- \n"
+        response2[-1] += kb.slash
         response2[-1] += ("☔ Осадки " + precipitation[i] + " мм")
     return response2
+
+
+def get_now(city):
+    try:
+        url = "https://www.gismeteo.ru" + json_load[city] + "now"
+    except:
+        url = ''
+        return -1
+    response2 = []
+    response = requests.get(url, headers={
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    })
+    soup = BeautifulSoup(response.text, "lxml", parser='html.parser')
+    main_wrap = soup.find(class_="section section-content section-bottom-shadow")
+    day, data, time = main_wrap.find(class_="now-localdate").text.split(',')
+    sunrise = main_wrap.find(class_="now-astro-sunrise").find(class_="time").text
+    sunset = main_wrap.find(class_="now-astro-sunset").find(class_="time").text
+    temp = main_wrap.find(class_="now-weather").find(class_="unit unit_temperature_c").text
+    temp_feel = main_wrap.find(class_="now-feel").find(class_="unit unit_temperature_c").text
+    desc = main_wrap.find(class_="now-desc").text
+    main_states = [i.next.text for i in
+                   main_wrap.find(class_="info-wrap").find_all(class_="item-value")]
+    for i in range(len(main_states)):
+        tmp = ''
+        for j in range(len(main_states[i])):
+            if (str(main_states[i][j]).isdigit() or main_states[i][j] in "+-"):
+                tmp += main_states[i][j]
+        main_states[i] = tmp
+
+    response2.append(f"📅 {data}, {day}{kb.nl}")
+    response2[-1] += kb.slash
+    response2[-1] += (f"🕑 {time}{kb.nl}")
+    response2[-1] += kb.slash
+    response2[-1] += (f"🌄 Восход {sunrise}   ↷   🌇 Закат {sunset}{kb.nl} ")
+    response2[-1] += kb.slash
+    response2[-1] += (f"🌪️ Ветер {main_states[0]} м/с{kb.nl}")
+    response2[-1] += kb.slash
+    response2[-1] += (f"🎚️ Давление {main_states[1]} мм рт.ст.{kb.nl}")
+    response2[-1] += kb.slash
+    response2[-1] += (f"💧 Относительная влажность {main_states[2]} %{kb.nl}")
+    response2[-1] += kb.slash
+    response2[-1] += (f"🧲 Г/м активность {main_states[3]} балла из 9{kb.nl}")
+    response2[-1] += kb.slash
+    response2[-1] += (f"🌊 Вода {main_states[4]} {kb.nl}")
+    return response2[0]
