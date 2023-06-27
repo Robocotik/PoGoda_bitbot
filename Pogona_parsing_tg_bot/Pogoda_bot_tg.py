@@ -87,6 +87,9 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
         elif data['period'] == "На сейчас":
             await message.answer(wth.get_now(city))
 
+        elif data['period'] == "На сегодня":
+            await message.answer(wth.get_today(city))
+
         await state.finish()
     else:
         await message.answer("Такого временного промежутка нет 👉👈... \nМожет попробуем снова?",
