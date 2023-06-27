@@ -2,7 +2,6 @@ import json
 import re
 
 import requests
-from aiogram.utils.markdown import bold
 from bs4 import BeautifulSoup
 
 import keyboards as kb
@@ -20,7 +19,7 @@ def get_month(city):
     response = requests.get(url, headers={
         "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
     })
-    soup = BeautifulSoup(response.text, "lxml", parser='html.parser')
+    soup = BeautifulSoup(response.text, "lxml")
     response2 = []
     all_wraps = soup.find("div", class_="widget widget-month").find_all(class_="row-item")
     cur_month = ''
@@ -32,12 +31,12 @@ def get_month(city):
 
         if len(date.split()) > 1:
             cur_month = date.split()[-1]
-        response2.append(kb.pogoda_stikers[kb.pogoda_picture_num.index(pic_num)] + " " + kb.pogoda_phrase[
-            kb.pogoda_picture_num.index(pic_num)] + "\n")
-        response2[-1] += (str(date + '\n' if len(date.split()) > 1 else date + str(' ' + cur_month + '\n')))
+        response2.append(
+            "<b>" + (str(date + '\n' if len(date.split()) > 1 else date + str(' ' + cur_month + '\n'))) + "</b>")
+        response2[
+            -1] += f"{kb.pogoda_stikers[kb.pogoda_picture_num.index(pic_num)]} <u>{kb.pogoda_phrase[kb.pogoda_picture_num.index(pic_num)]}</u>  \n"
         # print(date if len(date.split()) > 1 else date + str(' ' + cur_month), end=' ')
-        response2[-1] += "минимальная температура: " + str(mint) + "\n" + "максимальная температура: " + str(
-            maxt) + "\n" + str(pic_num)
+        response2[-1] += f"минимальная температура: {mint} \nмаксимальная температура: {maxt} \n {pic_num}"
         # print("минимальная температура: ", mint, "      максимальная температура: ", maxt)
 
     return response2
@@ -155,11 +154,11 @@ def get_2week(city):
             humidity.append("-")
 
     for i in range(14):
-        response2.append(bold(all_dates[i]) + "\n")
+        response2.append("<b>" + (all_dates[i]) + "</b>" + "\n")
         response2[-1] += kb.slash
         response2[-1] += (
-                kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases[i])] + " " + kb.pogoda_phrase[
-            kb.pogoda_picture_num.index(all_icon_phrases[i])] + " \n")
+                kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases[i])] + " <u>" + kb.pogoda_phrase[
+            kb.pogoda_picture_num.index(all_icon_phrases[i])] + "</u>" + " \n")
         response2[-1] += kb.slash
         response2[-1] += ("🌡️ Ощущается как " + t_feel_air[i][1] + " ℃  -  " + t_feel_air[i][0] + " ℃ \n ")
         response2[-1] += ("🌡️ В среднем " + t_avg_air[i] + " ℃ \n")
@@ -203,11 +202,11 @@ def get_now(city):
                 tmp += main_states[i][j]
         main_states[i] = tmp
 
-    response2.append(f"📅 {data}, {day}{kb.nl}")
+    response2.append(f"📅 <b>{data}, {day} {time} </b>{kb.nl}")
     response2[-1] += kb.slash
-    response2[-1] += (f"🕑 {time}{kb.nl}")
+    response2[-1] += (f"🌡️ {temp}, ощущается как {temp_feel}️{kb.nl}")
     response2[-1] += kb.slash
-    response2[-1] += (f"🌄 Восход {sunrise}   ↷   🌇 Закат {sunset}{kb.nl} ")
+    response2[-1] += (f"🌇 Восход {sunrise}   ⤼   🌄 Закат {sunset}{kb.nl} ")
     response2[-1] += kb.slash
     response2[-1] += (f"🌪️ Ветер {main_states[0]} м/с{kb.nl}")
     response2[-1] += kb.slash
@@ -217,5 +216,5 @@ def get_now(city):
     response2[-1] += kb.slash
     response2[-1] += (f"🧲 Г/м активность {main_states[3]} балла из 9{kb.nl}")
     response2[-1] += kb.slash
-    response2[-1] += (f"🌊 Вода {main_states[4]} {kb.nl}")
+    response2[-1] += (f"🌊 Вода {main_states[4]} °C {kb.nl}")
     return response2[0]

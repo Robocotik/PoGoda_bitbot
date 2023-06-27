@@ -12,7 +12,7 @@ import weather as wth
 
 # инициализация бота
 
-bot = Bot(token=sc.API_TOKEN)
+bot = Bot(token=sc.API_TOKEN, parse_mode="HTML")
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 city = 'Москва'
