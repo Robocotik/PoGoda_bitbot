@@ -88,7 +88,16 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
             await message.answer(wth.get_now(city))
 
         elif data['period'] == "На сегодня":
-            await message.answer(wth.get_today(city))
+            for el in wth.get_day(city, ""):
+                await message.answer(el)
+
+        elif data['period'] == "На завтра":
+            for el in wth.get_day(city, "tomorrow"):
+                await message.answer(el)
+
+        elif data['period'] == "На 3 дня":
+            for el in wth.get_3days(city):
+                await message.answer(el)
 
         await state.finish()
     else:
