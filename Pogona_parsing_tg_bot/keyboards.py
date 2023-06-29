@@ -1,4 +1,31 @@
+import json
+import re
+
+import requests
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from bs4 import BeautifulSoup
+
+with open("city_catalog.json", 'r', encoding='utf-8') as file:
+    json_load = json.load(file)
+nl = '\n'
+
+
+# часть парсинга
+def find_10_day_periods(city):
+    try:
+        url = "https://www.gismeteo.ru" + json_load[city] + "3-days"
+    except:
+        url = ''
+    response = requests.get(url, headers={
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    })
+    soup = BeautifulSoup(response.text, "lxml", parser='html.parser')
+    all_wraps = soup.find("div", class_="widget widget-weather-parameters widget-threedays").find(class_="widget-items")
+    all_days = [i.text for i in all_wraps.find(class_="widget-date-wrap").find_all(class_=re.compile("item"))]
+    for i in range(len(all_days)):
+        all_days[i] = nums_stikers[i] + " " + all_days[i] + nl
+    print(all_days)
+    return all_days
 
 
 def check_the_dick_for_key(dick, key_find):
@@ -9,9 +36,9 @@ def check_the_dick_for_key(dick, key_find):
 
 
 # кнопки городов
-nums_stikers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"]
+nums_stikers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
 slash = "--------------------------------------------------------- \n"
-nl = '\n'
+
 pogoda_stikers = [
     "☀️",  # 1
     "🌫️",  # 2
@@ -519,8 +546,7 @@ pogoda_picture_num = [
 arrows_directions = ["⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️"]
 arrows_directions_alp = ["Ю", "ЮЗ", "З", "СЗ", "С", "СВ", "В", "ЮВ"]
 # кнопки погоды
-weather_periods = ['На сейчас', 'На сегодня', 'На завтра', 'На 3 дня', 'На две недели', 'На месяц']
-
+weather_periods = ['На сейчас', 'На ближайший день', 'На две недели', 'На месяц']
 # кнопки диалога
 talk_start_1 = KeyboardButton('Погода, серьезно?')
 
@@ -528,8 +554,5 @@ talk_start_1 = KeyboardButton('Погода, серьезно?')
 markup_retry = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton("Еще по-братски"))
 markup_talk_start = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(talk_start_1)
 markup_weather_period = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).row(weather_periods[0],
-                                                                                              weather_periods[1],
-                                                                                              weather_periods[2]).row(
-    weather_periods[3],
-    weather_periods[4],
-    weather_periods[5])
+                                                                                              weather_periods[1]).row(
+    weather_periods[2], weather_periods[3])

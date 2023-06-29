@@ -38,9 +38,9 @@ def get_month(city):
         response2[
             -1] += f"{kb.pogoda_stikers[kb.pogoda_picture_num.index(pic_num)]} <b>{kb.pogoda_phrase[kb.pogoda_picture_num.index(pic_num)]}</b>  \n"
         response2[-1] += kb.slash
-        # print(date if len(date.split()) > 1 else date + str(' ' + cur_month), end=' ')
+
         response2[-1] += f"<b>🌡 мин температура </b> {mint} ℃ \n<b>🌡 макс температура </b> {maxt} ℃ \n {pic_num}"
-        # print("минимальная температура: ", mint, "      максимальная температура: ", maxt)
+
 
     return response2
 
@@ -158,7 +158,7 @@ def get_2week(city):
             humidity.append("-")
 
     for i in range(14):
-        response2.append("<b><u>📅 " + (all_dates[i]) + " " + all_days[i] + "</u></b>" + "\n")
+        response2.append("<b><u>📅 " + (all_dates[i]) + " | " + all_days[i] + "</u></b>" + "\n")
         response2[-1] += kb.slash
         response2[-1] += (
                 kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases[i])] + " <b>" + kb.pogoda_phrase[
@@ -198,6 +198,8 @@ def get_now(city):
     temp = main_wrap.find(class_="now-weather").find(class_="unit unit_temperature_c").text
     temp_feel = main_wrap.find(class_="now-feel").find(class_="unit unit_temperature_c").text
     desc = main_wrap.find(class_="now-desc").text
+    pic_tag = "#" + main_wrap.next["class"][1].replace('-', '_')
+
     main_states = [i.next.text for i in
                    main_wrap.find(class_="info-wrap").find_all(class_="item-value")]
     for i in range(len(main_states)):
@@ -210,9 +212,10 @@ def get_now(city):
     if int(sunrise.split(":")[0]) > int(sunset.split(":")[0]):
         sunrise, sunset = sunset, sunrise
 
-    response2.append(f"📅 <b><u>{data.strip()} {day.strip()} {time.strip()} </u></b>{kb.nl}")
+    response2.append(f"📅 <b><u>{data.strip()} |  {day.strip()} | {time.strip()} </u></b>{kb.nl}")
     response2[-1] += kb.slash
-    response2[-1] += "👉 " + "<b>" + str(desc.strip()) + "</b>" + kb.nl
+    response2[-1] += kb.pogoda_stikers[kb.pogoda_picture_num.index(pic_tag)] + " <b>" + str(
+        desc.strip()) + "</b>" + kb.nl
     response2[-1] += kb.slash
     response2[-1] += (f"🌡️ <b>{temp} ℃</b>, ощущается как {temp_feel} ℃{kb.nl}")
     response2[-1] += kb.slash
@@ -259,7 +262,7 @@ def get_day(city, day):
                         all_wraps.find(class_="widget-row widget-row-icon").find_all(class_="row-item")]
 
     for i in all_wraps.find_all("div", class_="widget-row-chart widget-row-chart-temperature row-with-caption"):
-        print(i)
+
         if i.get("data-row") == "temperature-air":
             for el in i.find_all(class_="value"):
                 try:
@@ -430,24 +433,138 @@ def get_3days(city):
             humidity.append("-")
 
     for i in range(12):
-        response2.append("<b><u>" + all_days[i // 4] + " " + (all_times[i]) + "</u></b>" + "\n")
+        response2.append("<b><u>" + all_days[i // 4] + " | " + (all_times[i]) + "</u></b>" + "\n")
         response2[-1] += kb.slash
         response2[-1] += (
                 kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases_with_desc[i][0])] + " <b>" +
                 kb.pogoda_phrase[
                     kb.pogoda_picture_num.index(all_icon_phrases_with_desc[i][0])] + "</b>" + " \n")
         response2[-1] += kb.slash
-        response2[-1] += ("🌡️ <b>Температура</b> " + str(t_air[i]) + " ℃" "\n")
+        response2[-1] += f"🌡️ <b>Температура</b> {t_air[i]} ℃\n"
+        if str(t_air[i]) != str(t_feel_air):
+            response2[-1] += f"🌡️ <b>Ощущается как</b> {t_feel_air[i]} ℃\n"
+        response2[-1] += kb.slash
+        response2[
+            -1] += f"🌬 <b>Направление ветра</b> {kb.arrows_directions[kb.arrows_directions_alp.index(wind_direction[i][1])]} {wind_direction[i][1]}\n"
+        response2[-1] += f"🌬 <b>Средняя скорость ветра</b> {wind_avg_speed[i]} м/c\n"
+        response2[-1] += kb.slash
+        response2[-1] += f"💧 <b>Относительная влажность</b> {humidity[i]} %\n"
+        response2[-1] += kb.slash
+        response2[-1] += f"🎚️ <b>Давление</b> {pressure[i][0]} мм. рт. ст.\n"
+        response2[-1] += kb.slash
+        response2[-1] += f"☔ <b>Осадки</b> {precipitation[i]} мм"
+    return response2
+
+
+def get_one_from_ten(city, day_to_find=1):
+    day_to_find -= 1
+    try:
+        url = "https://www.gismeteo.ru" + json_load[city] + "3-days"
+    except:
+        url = ''
+    response = requests.get(url, headers={
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    })
+    response2 = []
+    t_air = []
+    t_feel_air = []
+    t_avg_air = []
+    wind_avg_speed = []
+    wind_gust = []
+    wind_direction = []
+    precipitation = []
+    pressure = []
+    humidity = []
+    response2 = []
+    soup = BeautifulSoup(response.text, "lxml", parser='html.parser')
+    all_wraps = soup.find("div", class_="widget widget-weather-parameters widget-threedays").find(class_="widget-items")
+    all_days = [i.text for i in all_wraps.find(class_="widget-date-wrap").find_all(class_=re.compile("item"))]
+    all_times = [i.text for i in
+                 all_wraps.find(class_="widget-row widget-row-time").find_all(class_=re.compile("item"))]
+    all_icon_phrases_with_desc = [[i.find("use")["href"], i.find(class_="weather-icon tooltip").get("data-text")] for i
+                                  in
+                                  all_wraps.find(class_="widget-row widget-row-icon").find_all(class_="row-item")]
+    for i in all_wraps.find_all("div", class_="widget-row-chart widget-row-chart-temperature row-with-caption"):
+
+        if i.get("data-row") == "temperature-air":
+            for el in i.find_all(class_="value"):
+                try:
+                    t_air.append(el.find(class_="unit unit_temperature_c").text)
+                except:
+                    t_air.append("-")
+
+
+        elif i.get("data-row") == "temperature-heat-index":
+            for el in i.find_all(class_="value"):
+                try:
+                    t_feel_air.append(el.find(class_="unit unit_temperature_c").text)
+                except:
+                    t_feel_air.append("-")
+
+    for el in all_wraps.find("div", {"data-row": "wind-speed"}).find_all(class_="row-item"):
+        try:
+            wind_avg_speed.append(el.find(class_="wind-unit unit unit_wind_m_s").text)
+        except:
+            wind_avg_speed.append("-")
+
+    for el in all_wraps.find("div", {"data-row": "wind-gust"}).find_all(class_="row-item"):
+        try:
+            wind_gust.append(el.find(class_="wind-unit unit unit_wind_m_s").text)
+        except:
+            wind_gust.append("-")
+
+    for el in all_wraps.find(class_="widget-row widget-row-precipitation-bars row-with-caption").find_all(
+            class_="row-item"):
+        try:
+            precipitation.append(el.find(class_='item-unit').text)
+        except:
+            precipitation.append("-")
+
+    for el in all_wraps.find(class_="widget-row-chart widget-row-chart-pressure row-with-caption").find_all(
+            class_="value"):
+        try:
+            pressure.append([el.find(class_="mint").find(class_="unit unit_pressure_mm_hg_atm").text])
+        except:
+            pressure.append(["-"])
+        try:
+            pressure[-1].append(el.find(class_="maxt").find(class_="unit unit_pressure_mm_hg_atm").text)
+        except:
+            pressure[-1].append("-")
+
+    for el in all_wraps.find(class_="widget-row widget-row-wind-direction row-with-caption").find_all(
+            class_="row-item"):
+        try:
+            wind_direction.append([str(el.next.get("class")[-1][-1]), str(el.find(class_="direction").text)])
+        except:
+            wind_direction.append(["-", "-"])
+
+    for el in all_wraps.find(class_="widget-row widget-row-humidity row-with-caption").find_all(
+            class_=re.compile("row-item")):
+        try:
+            humidity.append(el.text)
+        except:
+            humidity.append("-")
+    print(all_days)
+    print(all_times)
+    for i in range(day_to_find, day_to_find + 4):
+        response2.append("<b><u>" + all_days[i // 4] + " | " + (all_times[i]) + "</u></b>" + "\n")
+        response2[-1] += kb.slash
         response2[-1] += (
-                "🌡️ <b>Ощущается как</b> " + str(t_feel_air[i]) + " ℃\n")
+                kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases_with_desc[i][0])] + " <b>" +
+                kb.pogoda_phrase[
+                    kb.pogoda_picture_num.index(all_icon_phrases_with_desc[i][0])] + "</b>" + " \n")
         response2[-1] += kb.slash
-        response2[-1] += ("🌬 <b>Направление ветра</b> " + kb.arrows_directions[
-            kb.arrows_directions_alp.index(wind_direction[i][1])] + " " + wind_direction[i][1] + " \n")
-        response2[-1] += ("🌬 <b>Средняя скорость ветра</b> " + wind_avg_speed[i] + "м/c\n")
+        response2[-1] += f"🌡️ <b>Температура</b> {t_air[i]} ℃\n"
+        if str(t_air[day_to_find - 1]) != str(t_feel_air[i]):
+            response2[-1] += f"🌡️ <b>Ощущается как</b> {t_feel_air[i]} ℃\n"
         response2[-1] += kb.slash
-        response2[-1] += ("💧 <b>Относительная влажность</b> " + humidity[i] + " %\n")
+        response2[
+            -1] += f"🌬 <b>Направление ветра</b> {kb.arrows_directions[kb.arrows_directions_alp.index(wind_direction[i][1])]} {wind_direction[i][1]}\n"
+        response2[-1] += f"🌬 <b>Средняя скорость ветра</b> {wind_avg_speed[i]} м/c\n"
         response2[-1] += kb.slash
-        response2[-1] += ("🎚️ <b>Давление</b> " + pressure[i][0] + " мм. рт. ст.\n ")
+        response2[-1] += f"💧 <b>Относительная влажность</b> {humidity[i]} %\n"
         response2[-1] += kb.slash
-        response2[-1] += ("☔ <b>Осадки</b> " + precipitation[i] + " мм")
+        response2[-1] += f"🎚️ <b>Давление</b> {pressure[i][0]} мм. рт. ст.\n"
+        response2[-1] += kb.slash
+        response2[-1] += f"☔ <b>Осадки</b> {precipitation[i]} мм"
     return response2
