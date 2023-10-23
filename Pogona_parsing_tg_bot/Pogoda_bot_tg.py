@@ -81,27 +81,31 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
     # обработка периодов
     if data['period'] in kb.weather_periods:
         if data['period'] == "На месяц":
-            await message.answer("Лови, Дорогой", reply_markup=kb.markup_retry)
+            await message.answer("Лови, Дорогой")
             for el in wth.get_month(city):
                 await message.answer(el)
-                await state.finish()
+            await message.answer("Что-то еще? :)", reply_markup=kb.markup_retry)
+            await state.finish()
 
         elif data['period'] == "На две недели":
-            await message.answer("Лови, Дорогой", reply_markup=kb.markup_retry)
+            await message.answer("Лови, Дорогой")
             for el in wth.get_2week(city):
                 await message.answer(el)
-                await state.finish()
+            await message.answer("Что-то еще? :)", reply_markup=kb.markup_retry)
+            await state.finish()
 
         elif data['period'] == "На сейчас":
-            await message.answer("Лови, Дорогой", reply_markup=kb.markup_retry)
+            await message.answer("Лови, Дорогой")
             await message.answer(wth.get_now(city))
+            await message.answer("Что-то еще? :)", reply_markup=kb.markup_retry)
             await state.finish()
 
         elif data['period'] == "На ближайший день":
             await message.answer("Какой именно денек тебя интересует?")
-            # print(kb.find_10_day_periods(data['city']))
+
             for el in kb.find_10_day_periods(data['city']):
                 await message.answer(el)
+            await message.answer("Отправьте число чтобы продолжить")
             await Weather_machine_state.next()
 
 
@@ -114,9 +118,10 @@ async def load_period(message: types.Message, state: FSMContext) -> None:
 async def load_cur_date(message: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['cur_date'] = message.text
-    await message.answer("Лови, Дорогой", reply_markup=kb.markup_retry)
+    await message.answer("Лови, Дорогой")
     for el in wth.get_one_from_ten(data['city'], int(data['cur_date'])):
         await message.answer(el)
+    await message.answer("Что-то еще? :)", reply_markup=kb.markup_retry)
     await state.finish()
 
 
@@ -127,20 +132,13 @@ async def retry_call(message: types.Message):
     await Weather_machine_state.period.set()
 
 
-"""
-@dp.message_handler(Text(equals= str(i) for i in range(1, 11)))
-async def cur_date_call(message: types.Message):
-    ans = int(message.text)
-    await message.answer("Лови, Дорогой", reply_markup=kb.markup_retry)
-    for el in wth.get_one_from_ten(city, ans):
-        await message.answer(el)
+@dp.message_handler(Text(equals="Изменить город"))
+async def change_city_call(message: types.Message):
+    await message.answer(text="Как скажешь, братик, сейчас все организуем\nУкажи новый город и все будет сделано. 👇")
+    await Weather_machine_state.city.set()
 
-@dp.message_handler()
-async def else_mistake_call(message: types.Message):
-    await message.answer(text="Видимо что-то пошло не так... Попробуем еще раз?\n")
 
-"""
 
 # запуск кода
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=False)

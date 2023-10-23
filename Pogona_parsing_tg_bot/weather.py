@@ -39,7 +39,7 @@ def get_month(city):
             -1] += f"{kb.pogoda_stikers[kb.pogoda_picture_num.index(pic_num)]} <b>{kb.pogoda_phrase[kb.pogoda_picture_num.index(pic_num)]}</b>  \n"
         response2[-1] += kb.slash
 
-        response2[-1] += f"<b>🌡 мин температура </b> {mint} ℃ \n<b>🌡 макс температура </b> {maxt} ℃ \n {pic_num}"
+        response2[-1] += f"🔺 <b>{maxt} ℃</b>\n🔻 <b>{mint} ℃ </b>"
 
 
     return response2
@@ -457,7 +457,6 @@ def get_3days(city):
 
 
 def get_one_from_ten(city, day_to_find=1):
-    day_to_find -= 1
     try:
         url = "https://www.gismeteo.ru" + json_load[city] + "3-days"
     except:
@@ -544,27 +543,27 @@ def get_one_from_ten(city, day_to_find=1):
             humidity.append(el.text)
         except:
             humidity.append("-")
-    print(all_days)
-    print(all_times)
-    for i in range(day_to_find, day_to_find + 4):
-        response2.append("<b><u>" + all_days[i // 4] + " | " + (all_times[i]) + "</u></b>" + "\n")
+    for i in range(4):
+        response2.append(
+            "<b><u>" + all_days[day_to_find] + " | " + (all_times[day_to_find * 4 + i]) + "</u></b>" + "\n")
         response2[-1] += kb.slash
         response2[-1] += (
-                kb.pogoda_stikers[kb.pogoda_picture_num.index(all_icon_phrases_with_desc[i][0])] + " <b>" +
+                kb.pogoda_stikers[
+                    kb.pogoda_picture_num.index(all_icon_phrases_with_desc[day_to_find * 4 + i][0])] + " <b>" +
                 kb.pogoda_phrase[
-                    kb.pogoda_picture_num.index(all_icon_phrases_with_desc[i][0])] + "</b>" + " \n")
+                    kb.pogoda_picture_num.index(all_icon_phrases_with_desc[day_to_find * 4 + i][0])] + "</b>" + " \n")
         response2[-1] += kb.slash
-        response2[-1] += f"🌡️ <b>Температура</b> {t_air[i]} ℃\n"
-        if str(t_air[day_to_find - 1]) != str(t_feel_air[i]):
-            response2[-1] += f"🌡️ <b>Ощущается как</b> {t_feel_air[i]} ℃\n"
+        response2[-1] += f"🌡️ <b>Температура</b> {t_air[day_to_find * 4 + i]} ℃\n"
+        if str(t_air[day_to_find * 4 + i]) != str(t_feel_air[day_to_find * 4 + i]):
+            response2[-1] += f"🌡️ <b>Ощущается как</b> {t_feel_air[day_to_find * 4 + i]} ℃\n"
         response2[-1] += kb.slash
         response2[
-            -1] += f"🌬 <b>Направление ветра</b> {kb.arrows_directions[kb.arrows_directions_alp.index(wind_direction[i][1])]} {wind_direction[i][1]}\n"
-        response2[-1] += f"🌬 <b>Средняя скорость ветра</b> {wind_avg_speed[i]} м/c\n"
+            -1] += f"🌬 <b>Направление ветра</b> {kb.arrows_directions[kb.arrows_directions_alp.index(wind_direction[day_to_find * 4 + i][1])]} {wind_direction[day_to_find * 4 + i][1]}\n"
+        response2[-1] += f"🌬 <b>Средняя скорость ветра</b> {wind_avg_speed[day_to_find * 4 + i]} м/c\n"
         response2[-1] += kb.slash
-        response2[-1] += f"💧 <b>Относительная влажность</b> {humidity[i]} %\n"
+        response2[-1] += f"💧 <b>Относительная влажность</b> {humidity[day_to_find * 4 + i]} %\n"
         response2[-1] += kb.slash
-        response2[-1] += f"🎚️ <b>Давление</b> {pressure[i][0]} мм. рт. ст.\n"
+        response2[-1] += f"🎚️ <b>Давление</b> {pressure[day_to_find * 4 + i][0]} мм. рт. ст.\n"
         response2[-1] += kb.slash
-        response2[-1] += f"☔ <b>Осадки</b> {precipitation[i]} мм"
+        response2[-1] += f"☔ <b>Осадки</b> {precipitation[day_to_find * 4 + i]} мм"
     return response2

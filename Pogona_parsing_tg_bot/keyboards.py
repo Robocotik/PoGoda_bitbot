@@ -543,15 +543,16 @@ pogoda_picture_num = [
     "#n_c3_s3_st"  # 156
 ]
 
-arrows_directions = ["⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️"]
-arrows_directions_alp = ["Ю", "ЮЗ", "З", "СЗ", "С", "СВ", "В", "ЮВ"]
+arrows_directions = ["⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️", "⚪"]
+arrows_directions_alp = ["Ю", "ЮЗ", "З", "СЗ", "С", "СВ", "В", "ЮВ", "штиль"]
 # кнопки погоды
 weather_periods = ['На сейчас', 'На ближайший день', 'На две недели', 'На месяц']
 # кнопки диалога
 talk_start_1 = KeyboardButton('Погода, серьезно?')
 
 # создание отдельных виртуальных клавиатур
-markup_retry = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton("Еще по-братски"))
+markup_retry = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).row(KeyboardButton("Еще по-братски"),
+                                                                                     KeyboardButton("Изменить город"))
 markup_talk_start = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(talk_start_1)
 markup_weather_period = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).row(weather_periods[0],
                                                                                               weather_periods[1]).row(
